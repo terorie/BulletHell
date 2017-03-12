@@ -102,8 +102,10 @@ void draw()
 
 class Spinner
 {
+  java.util.Random rng;
   Spinner()
   {
+    rng = new java.util.Random();
   }
   void update()
   {
@@ -121,7 +123,8 @@ class Spinner
     {
       if (frameCount % floor(a) == 0)
       {
-        bulletlist.add(new Bullet(x+width/2, y+height/2, 1));
+        bulletlist.add(new Bullet(x+width/2, y+height/2, 
+          rng.nextBoolean() ? Bullet.MODE_MOUSE : Bullet.MODE_WOBBEL));
         bullets++;
         if (a > 2)
         {
@@ -151,12 +154,12 @@ class Spinner
       }
       if (frameCount % 6 == 0)
       {
-        bulletlist.add(new Bullet(x+width/2, y+height/2, 2));
+        bulletlist.add(new Bullet(x+width/2, y+height/2, Bullet.MODE_CENTER));
         bullets++;
       }
       if (frameCount % 12 == 0)
       {
-        bulletlist.add(new Bullet(x+width/2, y+height/2, 1));
+        bulletlist.add(new Bullet(x+width/2, y+height/2, Bullet.MODE_CENTER));
         bullets++;
       }
     }
@@ -174,6 +177,10 @@ class Bullet
   float topspeed;
   int mode;
 
+  static final int MODE_WOBBEL = 1;
+  static final int MODE_CENTER = 2;
+  static final int MODE_MOUSE = 3;
+
   Bullet(float posx, float posy, int mode_)
   {
     mouse = new PVector(mouseX, mouseY);
@@ -183,16 +190,20 @@ class Bullet
     topspeed = 4;
 
     this.mode = mode_;
+    if (mode == MODE_CENTER)
+    {
+      dir = PVector.sub(center, location);
+    } else if (mode == MODE_MOUSE)
+    {
+      dir = PVector.sub(mouse, location);
+    }
   }
   void update()
   {
-    if (mode == 1)
+    if (mode == MODE_WOBBEL)
     {
       dir = PVector.sub(mouse, location);
-    } else if (mode == 2)
-    {
-      dir = PVector.sub(center, location);
-    }
+    } 
     dir.normalize();
     dir.mult(0.5);
     acceleration = dir;
@@ -201,15 +212,20 @@ class Bullet
     velocity.limit(topspeed);
     location.add(velocity);
 
-    if (mode == 1)
+    if (mode == MODE_WOBBEL)
     {
       fill(255);
-      stroke(255);
+      noStroke();
       ellipse(location.x, location.y, 15, 15);
-    } else if (mode == 2)
+    } else if (mode == MODE_CENTER)
     {
       fill(255, 0, 0);
-      stroke(255, 0, 0);
+      noStroke();
+      ellipse(location.x, location.y, 15, 15);
+    } else if (mode == MODE_MOUSE)
+    {
+      fill(0, 255, 0);
+      noStroke();
       ellipse(location.x, location.y, 15, 15);
     }
   }
